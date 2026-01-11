@@ -59,7 +59,7 @@ body:
     id: docs
     attributes:
       label: Check the Docs First
-      description: Make sure you check our docs first at https://docs.metaplex.com
+      description: Make sure you check our docs first at https://docs.trezoaplex.com
       options:
         - label: I have checked the docs and it didn't solve my issue
           required: true

@@ -2,15 +2,15 @@ import styled from "styled-components";
 import Button from "@mui/material/Button";
 import { CandyMachineAccount } from "./candy-machine";
 import { CircularProgress } from "@mui/material";
-import { GatewayStatus, useGateway } from "@civic/solana-gateway-react";
+import { GatewayStatus, useGateway } from "@civic/trezoa-gateway-react";
 import { useEffect, useState, useRef } from "react";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@trezoa/wallet-adapter-react";
 import {
   findGatewayToken,
   getGatewayTokenAddressForOwnerAndGatekeeperNetwork,
   onGatewayTokenChange,
   removeAccountChangeListener,
-} from "@identity.com/solana-gateway-ts";
+} from "@identity.com/trezoa-gateway-ts";
 import { CIVIC_GATEKEEPER_NETWORK } from "./utils";
 
 export const CTAButton = styled(Button)`

@@ -1,12 +1,12 @@
 /* eslint-disable */
-import * as anchor from "@project-serum/anchor";
+import * as trezoa from "@trezoa-serum/trezoa";
 
-import { MintLayout, TOKEN_PROGRAM_ID, Token } from "@solana/spl-token";
+import { MintLayout, TOKEN_PROGRAM_ID, Token } from "@trezoa/tpl-token";
 import {
   SystemProgram,
   Transaction,
   SYSVAR_SLOT_HASHES_PUBKEY,
-} from "@solana/web3.js";
+} from "@trezoa/web3.js";
 import { sendTransactions, SequenceType } from "./connection";
 
 import {
@@ -17,40 +17,40 @@ import {
   SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
 } from "./utils";
 
-export const CANDY_MACHINE_PROGRAM = new anchor.web3.PublicKey(
+export const CANDY_MACHINE_PROGRAM = new trezoa.web3.PublicKey(
   "cndy3Z4yapfJBmL3ShUp5exZKqR3z33thTzeNMm2gRZ"
 );
 
-const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey(
+const TOKEN_METADATA_PROGRAM_ID = new trezoa.web3.PublicKey(
   "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
 );
 
 interface CandyMachineState {
-  authority: anchor.web3.PublicKey;
+  authority: trezoa.web3.PublicKey;
   itemsAvailable: number;
   itemsRedeemed: number;
   itemsRemaining: number;
-  treasury: anchor.web3.PublicKey;
-  tokenMint: null | anchor.web3.PublicKey;
+  treasury: trezoa.web3.PublicKey;
+  tokenMint: null | trezoa.web3.PublicKey;
   isSoldOut: boolean;
   isActive: boolean;
   isPresale: boolean;
   isWhitelistOnly: boolean;
-  goLiveDate: null | anchor.BN;
-  price: anchor.BN;
+  goLiveDate: null | trezoa.BN;
+  price: trezoa.BN;
   gatekeeper: null | {
     expireOnUse: boolean;
-    gatekeeperNetwork: anchor.web3.PublicKey;
+    gatekeeperNetwork: trezoa.web3.PublicKey;
   };
   endSettings: null | {
-    number: anchor.BN;
+    number: trezoa.BN;
     endSettingType: any;
   };
   whitelistMintSettings: null | {
     mode: any;
-    mint: anchor.web3.PublicKey;
+    mint: trezoa.web3.PublicKey;
     presale: boolean;
-    discountPrice: null | anchor.BN;
+    discountPrice: null | trezoa.BN;
   };
   hiddenSettings: null | {
     name: string;
@@ -61,19 +61,19 @@ interface CandyMachineState {
 }
 
 export interface CandyMachineAccount {
-  id: anchor.web3.PublicKey;
-  program: anchor.Program;
+  id: trezoa.web3.PublicKey;
+  program: trezoa.Program;
   state: CandyMachineState;
 }
 
 export const awaitTransactionSignatureConfirmation = async (
-  txid: anchor.web3.TransactionSignature,
+  txid: trezoa.web3.TransactionSignature,
   timeout: number,
-  connection: anchor.web3.Connection,
+  connection: trezoa.web3.Connection,
   queryStatus = false
-): Promise<anchor.web3.SignatureStatus | null | void> => {
+): Promise<trezoa.web3.SignatureStatus | null | void> => {
   let done = false;
-  let status: anchor.web3.SignatureStatus | null | void = {
+  let status: trezoa.web3.SignatureStatus | null | void = {
     slot: 0,
     confirmations: 0,
     err: null,
@@ -134,10 +134,10 @@ export const awaitTransactionSignatureConfirmation = async (
 };
 
 const createAssociatedTokenAccountInstruction = (
-  associatedTokenAddress: anchor.web3.PublicKey,
-  payer: anchor.web3.PublicKey,
-  walletAddress: anchor.web3.PublicKey,
-  splTokenMintAddress: anchor.web3.PublicKey
+  associatedTokenAddress: trezoa.web3.PublicKey,
+  payer: trezoa.web3.PublicKey,
+  walletAddress: trezoa.web3.PublicKey,
+  splTokenMintAddress: trezoa.web3.PublicKey
 ) => {
   const keys = [
     { pubkey: payer, isSigner: true, isWritable: true },
@@ -145,18 +145,18 @@ const createAssociatedTokenAccountInstruction = (
     { pubkey: walletAddress, isSigner: false, isWritable: false },
     { pubkey: splTokenMintAddress, isSigner: false, isWritable: false },
     {
-      pubkey: anchor.web3.SystemProgram.programId,
+      pubkey: trezoa.web3.SystemProgram.programId,
       isSigner: false,
       isWritable: false,
     },
     { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     {
-      pubkey: anchor.web3.SYSVAR_RENT_PUBKEY,
+      pubkey: trezoa.web3.SYSVAR_RENT_PUBKEY,
       isSigner: false,
       isWritable: false,
     },
   ];
-  return new anchor.web3.TransactionInstruction({
+  return new trezoa.web3.TransactionInstruction({
     keys,
     programId: SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
     data: Buffer.from([]),
@@ -164,17 +164,17 @@ const createAssociatedTokenAccountInstruction = (
 };
 
 export const getCandyMachineState = async (
-  anchorWallet: anchor.Wallet,
-  candyMachineId: anchor.web3.PublicKey,
-  connection: anchor.web3.Connection
+  anchorWallet: trezoa.Wallet,
+  candyMachineId: trezoa.web3.PublicKey,
+  connection: trezoa.web3.Connection
 ): Promise<CandyMachineAccount> => {
-  const provider = new anchor.Provider(connection, anchorWallet, {
+  const provider = new trezoa.Provider(connection, anchorWallet, {
     preflightCommitment: "processed",
   });
 
-  const getProgramState = async (): Promise<[anchor.Program, any]> => {
-    const idl = await anchor.Program.fetchIdl(CANDY_MACHINE_PROGRAM, provider);
-    const program = new anchor.Program(idl!, CANDY_MACHINE_PROGRAM, provider);
+  const getProgramState = async (): Promise<[trezoa.Program, any]> => {
+    const idl = await trezoa.Program.fetchIdl(CANDY_MACHINE_PROGRAM, provider);
+    const program = new trezoa.Program(idl!, CANDY_MACHINE_PROGRAM, provider);
     const state: any = await program.account.candyMachine.fetch(candyMachineId);
     return [program, state];
   };
@@ -221,8 +221,8 @@ export const getCandyMachineState = async (
 };
 
 export const getFreezePdaState = async (
-  program: anchor.Program,
-  freezePda: anchor.web3.PublicKey
+  program: trezoa.Program,
+  freezePda: trezoa.web3.PublicKey
 ): Promise<any> => {
   try {
     const state: any = await program.account.freezePda.fetch(freezePda);
@@ -233,10 +233,10 @@ export const getFreezePdaState = async (
 };
 
 const getMasterEdition = async (
-  mint: anchor.web3.PublicKey
-): Promise<anchor.web3.PublicKey> => {
+  mint: trezoa.web3.PublicKey
+): Promise<trezoa.web3.PublicKey> => {
   return (
-    await anchor.web3.PublicKey.findProgramAddress(
+    await trezoa.web3.PublicKey.findProgramAddress(
       [
         Buffer.from("metadata"),
         TOKEN_METADATA_PROGRAM_ID.toBuffer(),
@@ -249,10 +249,10 @@ const getMasterEdition = async (
 };
 
 const getMetadata = async (
-  mint: anchor.web3.PublicKey
-): Promise<anchor.web3.PublicKey> => {
+  mint: trezoa.web3.PublicKey
+): Promise<trezoa.web3.PublicKey> => {
   return (
-    await anchor.web3.PublicKey.findProgramAddress(
+    await trezoa.web3.PublicKey.findProgramAddress(
       [
         Buffer.from("metadata"),
         TOKEN_METADATA_PROGRAM_ID.toBuffer(),
@@ -264,43 +264,43 @@ const getMetadata = async (
 };
 
 export const getCandyMachineCreator = async (
-  candyMachine: anchor.web3.PublicKey
-): Promise<[anchor.web3.PublicKey, number]> => {
-  return await anchor.web3.PublicKey.findProgramAddress(
+  candyMachine: trezoa.web3.PublicKey
+): Promise<[trezoa.web3.PublicKey, number]> => {
+  return await trezoa.web3.PublicKey.findProgramAddress(
     [Buffer.from("candy_machine"), candyMachine.toBuffer()],
     CANDY_MACHINE_PROGRAM
   );
 };
 
 export const getFreezePda = async (
-  candyMachine: anchor.web3.PublicKey
-): Promise<[anchor.web3.PublicKey, number]> => {
-  return await anchor.web3.PublicKey.findProgramAddress(
+  candyMachine: trezoa.web3.PublicKey
+): Promise<[trezoa.web3.PublicKey, number]> => {
+  return await trezoa.web3.PublicKey.findProgramAddress(
     [Buffer.from("freeze"), candyMachine.toBuffer()],
     CANDY_MACHINE_PROGRAM
   );
 };
 
 export const getCollectionPDA = async (
-  candyMachineAddress: anchor.web3.PublicKey
-): Promise<[anchor.web3.PublicKey, number]> => {
-  return await anchor.web3.PublicKey.findProgramAddress(
+  candyMachineAddress: trezoa.web3.PublicKey
+): Promise<[trezoa.web3.PublicKey, number]> => {
+  return await trezoa.web3.PublicKey.findProgramAddress(
     [Buffer.from("collection"), candyMachineAddress.toBuffer()],
     CANDY_MACHINE_PROGRAM
   );
 };
 
 export interface CollectionData {
-  mint: anchor.web3.PublicKey;
-  candyMachine: anchor.web3.PublicKey;
+  mint: trezoa.web3.PublicKey;
+  candyMachine: trezoa.web3.PublicKey;
 }
 
 export const getCollectionAuthorityRecordPDA = async (
-  mint: anchor.web3.PublicKey,
-  newAuthority: anchor.web3.PublicKey
-): Promise<anchor.web3.PublicKey> => {
+  mint: trezoa.web3.PublicKey,
+  newAuthority: trezoa.web3.PublicKey
+): Promise<trezoa.web3.PublicKey> => {
   return (
-    await anchor.web3.PublicKey.findProgramAddress(
+    await trezoa.web3.PublicKey.findProgramAddress(
       [
         Buffer.from("metadata"),
         TOKEN_METADATA_PROGRAM_ID.toBuffer(),
@@ -314,23 +314,23 @@ export const getCollectionAuthorityRecordPDA = async (
 };
 
 export type SetupState = {
-  mint: anchor.web3.Keypair;
-  userTokenAccount: anchor.web3.PublicKey;
+  mint: trezoa.web3.Keypair;
+  userTokenAccount: trezoa.web3.PublicKey;
   transaction: string;
 };
 
 export const createAccountsForMint = async (
   candyMachine: CandyMachineAccount,
-  payer: anchor.web3.PublicKey
+  payer: trezoa.web3.PublicKey
 ): Promise<SetupState> => {
-  const mint = anchor.web3.Keypair.generate();
+  const mint = trezoa.web3.Keypair.generate();
   const userTokenAccountAddress = (
     await getAtaForMint(mint.publicKey, payer)
   )[0];
 
-  const signers: anchor.web3.Keypair[] = [mint];
+  const signers: trezoa.web3.Keypair[] = [mint];
   const instructions = [
-    anchor.web3.SystemProgram.createAccount({
+    trezoa.web3.SystemProgram.createAccount({
       fromPubkey: payer,
       newAccountPubkey: mint.publicKey,
       space: MintLayout.span,
@@ -386,17 +386,17 @@ export const createAccountsForMint = async (
 
 type MintResult = {
   mintTxId: string;
-  metadataKey: anchor.web3.PublicKey;
+  metadataKey: trezoa.web3.PublicKey;
 };
 
 export const mintOneToken = async (
   candyMachine: CandyMachineAccount,
-  payer: anchor.web3.PublicKey,
+  payer: trezoa.web3.PublicKey,
   beforeTransactions: Transaction[] = [],
   afterTransactions: Transaction[] = [],
   setupState?: SetupState
 ): Promise<MintResult | null> => {
-  const mint = setupState?.mint ?? anchor.web3.Keypair.generate();
+  const mint = setupState?.mint ?? trezoa.web3.Keypair.generate();
   const userTokenAccountAddress = (
     await getAtaForMint(mint.publicKey, payer)
   )[0];
@@ -408,13 +408,13 @@ export const mintOneToken = async (
   const candyMachineAddress = candyMachine.id;
   const remainingAccounts = [];
   const instructions = [];
-  const signers: anchor.web3.Keypair[] = [];
+  const signers: trezoa.web3.Keypair[] = [];
   console.log("SetupState: ", setupState);
   if (!setupState) {
     signers.push(mint);
     instructions.push(
       ...[
-        anchor.web3.SystemProgram.createAccount({
+        trezoa.web3.SystemProgram.createAccount({
           fromPubkey: payer,
           newAccountPubkey: mint.publicKey,
           space: MintLayout.span,
@@ -479,7 +479,7 @@ export const mintOneToken = async (
     }
   }
   if (candyMachine.state.whitelistMintSettings) {
-    const mint = new anchor.web3.PublicKey(
+    const mint = new trezoa.web3.PublicKey(
       candyMachine.state.whitelistMintSettings.mint
     );
 
@@ -573,10 +573,10 @@ export const mintOneToken = async (
         tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
         tokenProgram: TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
-        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-        clock: anchor.web3.SYSVAR_CLOCK_PUBKEY,
+        rent: trezoa.web3.SYSVAR_RENT_PUBKEY,
+        clock: trezoa.web3.SYSVAR_CLOCK_PUBKEY,
         recentBlockhashes: SYSVAR_SLOT_HASHES_PUBKEY,
-        instructionSysvarAccount: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+        instructionSysvarAccount: trezoa.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
       },
       remainingAccounts:
         remainingAccounts.length > 0 ? remainingAccounts : undefined,
@@ -615,7 +615,7 @@ export const mintOneToken = async (
               payer: payer,
               collectionPda: collectionPDA,
               tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-              instructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+              instructions: trezoa.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
               collectionMint,
               collectionMetadata,
               collectionMasterEdition,

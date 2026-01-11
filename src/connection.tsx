@@ -10,9 +10,9 @@ import {
   TransactionInstruction,
   TransactionSignature,
   Blockhash,
-} from "@solana/web3.js";
+} from "@trezoa/web3.js";
 
-import { WalletNotConnectedError } from "@solana/wallet-adapter-base";
+import { WalletNotConnectedError } from "@trezoa/wallet-adapter-base";
 
 export const DEFAULT_TIMEOUT = 60000;
 

@@ -1,11 +1,11 @@
-import * as anchor from "@project-serum/anchor";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { SystemProgram } from "@solana/web3.js";
+import * as trezoa from "@trezoa-serum/trezoa";
+import { TOKEN_PROGRAM_ID } from "@trezoa/tpl-token";
+import { SystemProgram } from "@trezoa/web3.js";
 import {
-  LAMPORTS_PER_SOL,
+  LAMPORTS_PER_TRZ,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
-} from "@solana/web3.js";
+} from "@trezoa/web3.js";
 
 export interface AlertState {
   open: boolean;
@@ -14,7 +14,7 @@ export interface AlertState {
   hideDuration?: number | null;
 }
 
-export const toDate = (value?: anchor.BN) => {
+export const toDate = (value?: trezoa.BN) => {
   if (!value) {
     return;
   }
@@ -36,19 +36,19 @@ export const formatNumber = {
 
     return numberFormater.format(val);
   },
-  asNumber: (val?: anchor.BN) => {
+  asNumber: (val?: trezoa.BN) => {
     if (!val) {
       return undefined;
     }
 
-    return val.toNumber() / LAMPORTS_PER_SOL;
+    return val.toNumber() / LAMPORTS_PER_TRZ;
   },
 };
 
 export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID =
-  new anchor.web3.PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
+  new trezoa.web3.PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
 
-export const CIVIC = new anchor.web3.PublicKey(
+export const CIVIC = new trezoa.web3.PublicKey(
   "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
 );
 
@@ -56,29 +56,29 @@ export const CIVIC_GATEKEEPER_NETWORK =
   "ignREusXmGrscGNUesoU9mxfds9AiYTezUKex2PsZV6";
 
 export const getAtaForMint = async (
-  mint: anchor.web3.PublicKey,
-  buyer: anchor.web3.PublicKey
-): Promise<[anchor.web3.PublicKey, number]> => {
-  return await anchor.web3.PublicKey.findProgramAddress(
+  mint: trezoa.web3.PublicKey,
+  buyer: trezoa.web3.PublicKey
+): Promise<[trezoa.web3.PublicKey, number]> => {
+  return await trezoa.web3.PublicKey.findProgramAddress(
     [buyer.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
     SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
   );
 };
 
 export const getNetworkExpire = async (
-  gatekeeperNetwork: anchor.web3.PublicKey
-): Promise<[anchor.web3.PublicKey, number]> => {
-  return await anchor.web3.PublicKey.findProgramAddress(
+  gatekeeperNetwork: trezoa.web3.PublicKey
+): Promise<[trezoa.web3.PublicKey, number]> => {
+  return await trezoa.web3.PublicKey.findProgramAddress(
     [gatekeeperNetwork.toBuffer(), Buffer.from("expire")],
     CIVIC
   );
 };
 
 export const getNetworkToken = async (
-  wallet: anchor.web3.PublicKey,
-  gatekeeperNetwork: anchor.web3.PublicKey
-): Promise<[anchor.web3.PublicKey, number]> => {
-  return await anchor.web3.PublicKey.findProgramAddress(
+  wallet: trezoa.web3.PublicKey,
+  gatekeeperNetwork: trezoa.web3.PublicKey
+): Promise<[trezoa.web3.PublicKey, number]> => {
+  return await trezoa.web3.PublicKey.findProgramAddress(
     [
       wallet.toBuffer(),
       Buffer.from("gateway"),
@@ -90,10 +90,10 @@ export const getNetworkToken = async (
 };
 
 export function createAssociatedTokenAccountInstruction(
-  associatedTokenAddress: anchor.web3.PublicKey,
-  payer: anchor.web3.PublicKey,
-  walletAddress: anchor.web3.PublicKey,
-  splTokenMintAddress: anchor.web3.PublicKey
+  associatedTokenAddress: trezoa.web3.PublicKey,
+  payer: trezoa.web3.PublicKey,
+  walletAddress: trezoa.web3.PublicKey,
+  splTokenMintAddress: trezoa.web3.PublicKey
 ) {
   const keys = [
     {

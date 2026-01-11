@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import * as anchor from "@project-serum/anchor";
+import * as trezoa from "@trezoa-serum/trezoa";
 
 import styled from "styled-components";
 import { Container, Snackbar } from "@mui/material";
@@ -12,9 +12,9 @@ import {
   Connection,
   PublicKey,
   Transaction,
-} from "@solana/web3.js";
-import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
-import { WalletDialogButton } from "@solana/wallet-adapter-material-ui";
+} from "@trezoa/web3.js";
+import { useAnchorWallet, useWallet } from "@trezoa/wallet-adapter-react";
+import { WalletDialogButton } from "@trezoa/wallet-adapter-material-ui";
 import {
   awaitTransactionSignatureConfirmation,
   CANDY_MACHINE_PROGRAM,
@@ -28,9 +28,9 @@ import {
 import { AlertState, formatNumber, getAtaForMint, toDate } from "./utils";
 import { MintCountdown } from "./MintCountdown";
 import { MintButton } from "./MintButton";
-import { GatewayProvider } from "@civic/solana-gateway-react";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
-import { SolanaMobileWalletAdapterWalletName } from "@solana-mobile/wallet-adapter-mobile";
+import { GatewayProvider } from "@civic/trezoa-gateway-react";
+import { WalletAdapterNetwork } from "@trezoa/wallet-adapter-base";
+import { TrezoaMobileWalletAdapterWalletName } from "@trezoa-mobile/wallet-adapter-mobile";
 
 const ConnectButton = styled(WalletDialogButton)`
   width: 100%;
@@ -46,8 +46,8 @@ const ConnectButton = styled(WalletDialogButton)`
 const MintContainer = styled.div``; // add your owns styles here
 
 export interface HomeProps {
-  candyMachineId?: anchor.web3.PublicKey;
-  connection: anchor.web3.Connection;
+  candyMachineId?: trezoa.web3.PublicKey;
+  connection: trezoa.web3.Connection;
   txTimeout: number;
   rpcHost: string;
   network: WalletAdapterNetwork;
@@ -68,7 +68,7 @@ const Home = (props: HomeProps) => {
   const [isWhitelistUser, setIsWhitelistUser] = useState(false);
   const [isPresale, setIsPresale] = useState(false);
   const [isValidBalance, setIsValidBalance] = useState(false);
-  const [discountPrice, setDiscountPrice] = useState<anchor.BN>();
+  const [discountPrice, setDiscountPrice] = useState<trezoa.BN>();
   const [needTxnSplit, setNeedTxnSplit] = useState(true);
   const [setupTxn, setSetupTxn] = useState<SetupState>();
 
@@ -97,7 +97,7 @@ const Home = (props: HomeProps) => {
       if (props.candyMachineId) {
         try {
           const cndy = await getCandyMachineState(
-            anchorWallet as anchor.Wallet,
+            anchorWallet as trezoa.Wallet,
             props.candyMachineId,
             connection
           );
@@ -134,7 +134,7 @@ const Home = (props: HomeProps) => {
               }
             }
             // retrieves the whitelist token
-            const mint = new anchor.web3.PublicKey(
+            const mint = new trezoa.web3.PublicKey(
               cndy.state.whitelistMintSettings.mint
             );
             const token = (await getAtaForMint(mint, publicKey))[0];
@@ -163,13 +163,13 @@ const Home = (props: HomeProps) => {
           userPrice = isWLUser ? userPrice : cndy.state.price;
 
           if (cndy?.state.tokenMint) {
-            // retrieves the SPL token
-            const mint = new anchor.web3.PublicKey(cndy.state.tokenMint);
+            // retrieves the TPL token
+            const mint = new trezoa.web3.PublicKey(cndy.state.tokenMint);
             const token = (await getAtaForMint(mint, publicKey))[0];
             try {
               const balance = await connection.getTokenAccountBalance(token);
 
-              const valid = new anchor.BN(balance.value.amount).gte(userPrice);
+              const valid = new trezoa.BN(balance.value.amount).gte(userPrice);
 
               // only allow user to mint if token balance >  the user if the balance > 0
               setIsValidBalance(valid);
@@ -178,11 +178,11 @@ const Home = (props: HomeProps) => {
               setIsValidBalance(false);
               active = false;
               // no whitelist user, no mint
-              console.log("There was a problem fetching SPL token balance");
+              console.log("There was a problem fetching TPL token balance");
               console.log(e);
             }
           } else {
-            const balance = new anchor.BN(
+            const balance = new trezoa.BN(
               await connection.getBalance(publicKey)
             );
             const valid = balance.gte(userPrice);
@@ -376,7 +376,7 @@ const Home = (props: HomeProps) => {
           setAlertState({
             open: true,
             message:
-              "Mint likely failed! Anti-bot SOL 0.01 fee potentially charged! Check the explorer to confirm the mint failed and if so, make sure you are eligible to mint before trying again.",
+              "Mint likely failed! Anti-bot TRZ 0.01 fee potentially charged! Check the explorer to confirm the mint failed and if so, make sure you are eligible to mint before trying again.",
             severity: "error",
             hideDuration: 8000,
           });
@@ -480,7 +480,7 @@ const Home = (props: HomeProps) => {
             <ConnectButton
               onClick={(e) => {
                 if (
-                  wallet?.adapter.name === SolanaMobileWalletAdapterWalletName
+                  wallet?.adapter.name === TrezoaMobileWalletAdapterWalletName
                 ) {
                   connect();
                   e.preventDefault();
@@ -670,7 +670,7 @@ const getCountdownDate = (
     candyMachine.state.goLiveDate
       ? candyMachine.state.goLiveDate
       : candyMachine.state.isPresale
-      ? new anchor.BN(new Date().getTime() / 1000)
+      ? new trezoa.BN(new Date().getTime() / 1000)
       : undefined
   );
 };

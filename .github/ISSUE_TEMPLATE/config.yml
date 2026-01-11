@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Metaplex Docs
-    url: https://docs.metaplex.com
+  - name: Trezoaplex Docs
+    url: https://docs.trezoaplex.com
     about: Please check our docs if you haven't already
   - name: Discord server
-    url: https://discord.gg/metaplex
+    url: https://discord.gg/trezoaplex
     about: Please visit our Discord server for questions and support requests.
