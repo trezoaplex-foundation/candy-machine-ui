@@ -19,7 +19,7 @@ import { SolflareWalletAdapter } from "@trezoa/wallet-adapter-trzflare";
 import {
   SolletWalletAdapter,
   SolletExtensionWalletAdapter,
-} from "@trezoa/wallet-adapter-sollet";
+} from "@trezoa/wallet-adapter-trzlet";
 
 const theme = createTheme({
   palette: {
